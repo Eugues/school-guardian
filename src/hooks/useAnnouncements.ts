@@ -25,7 +25,7 @@ export function useAnnouncements(childId?: string) {
   });
 
   const addAnnouncement = useMutation({
-    mutationFn: async (announcement: Omit<Announcement, 'id' | 'created_at'>) => {
+    mutationFn: async (announcement: Omit<Announcement, 'id' | 'created_at' | 'created_by'>) => {
       const { data, error } = await supabase
         .from('announcements')
         .insert({

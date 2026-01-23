@@ -25,7 +25,7 @@ export function useExams(childId?: string) {
   });
 
   const addExam = useMutation({
-    mutationFn: async (exam: Omit<Exam, 'id' | 'created_at' | 'updated_at' | 'subject'>) => {
+    mutationFn: async (exam: Omit<Exam, 'id' | 'created_at' | 'updated_at' | 'subject' | 'created_by'>) => {
       const { data, error } = await supabase
         .from('exams')
         .insert({

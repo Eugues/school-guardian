@@ -4,9 +4,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ChildProvider } from "@/contexts/ChildContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import SchedulePage from "./pages/SchedulePage";
+import HomeworkPage from "./pages/HomeworkPage";
+import ExamsPage from "./pages/ExamsPage";
+import AnnouncementsPage from "./pages/AnnouncementsPage";
+import ChildrenPage from "./pages/ChildrenPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,7 +32,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
-  return <>{children}</>;
+  return <ChildProvider>{children}</ChildProvider>;
 }
 
 const App = () => (
@@ -40,10 +46,50 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route
-              path="/dashboard/*"
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/schedule"
+              element={
+                <ProtectedRoute>
+                  <SchedulePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/homework"
+              element={
+                <ProtectedRoute>
+                  <HomeworkPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/exams"
+              element={
+                <ProtectedRoute>
+                  <ExamsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/announcements"
+              element={
+                <ProtectedRoute>
+                  <AnnouncementsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/children"
+              element={
+                <ProtectedRoute>
+                  <ChildrenPage />
                 </ProtectedRoute>
               }
             />
