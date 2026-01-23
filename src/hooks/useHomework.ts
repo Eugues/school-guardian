@@ -25,7 +25,7 @@ export function useHomework(childId?: string) {
   });
 
   const addHomework = useMutation({
-    mutationFn: async (hw: Omit<Homework, 'id' | 'created_at' | 'updated_at' | 'completed' | 'completed_at' | 'subject'>) => {
+    mutationFn: async (hw: Omit<Homework, 'id' | 'created_at' | 'updated_at' | 'completed' | 'completed_at' | 'subject' | 'created_by'>) => {
       const { data, error } = await supabase
         .from('homework')
         .insert({

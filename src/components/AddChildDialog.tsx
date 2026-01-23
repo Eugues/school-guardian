@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Child } from '@/types/database';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,14 +17,29 @@ interface AddChildDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSubmit: (child: Omit<Child, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
+  initialData?: Child;
 }
 
-export function AddChildDialog({ open, onOpenChange, onSubmit }: AddChildDialogProps) {
+export function AddChildDialog({ open, onOpenChange, onSubmit, initialData }: AddChildDialogProps) {
   const [name, setName] = useState('');
   const [birthDate, setBirthDate] = useState('');
   const [grade, setGrade] = useState('');
   const [schoolName, setSchoolName] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (initialData) {
+      setName(initialData.name);
+      setBirthDate(initialData.birth_date || '');
+      setGrade(initialData.grade || '');
+      setSchoolName(initialData.school_name || '');
+    } else {
+      setName('');
+      setBirthDate('');
+      setGrade('');
+      setSchoolName('');
+    }
+  }, [initialData, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,14 +57,16 @@ export function AddChildDialog({ open, onOpenChange, onSubmit }: AddChildDialogP
         school_name: schoolName || null,
         avatar_url: null,
       });
-      toast.success('Filho(a) adicionado(a) com sucesso!');
-      setName('');
-      setBirthDate('');
-      setGrade('');
-      setSchoolName('');
+      toast.success(initialData ? 'Dados atualizados!' : 'Filho(a) adicionado(a) com sucesso!');
+      if (!initialData) {
+        setName('');
+        setBirthDate('');
+        setGrade('');
+        setSchoolName('');
+      }
       onOpenChange(false);
     } catch (error) {
-      toast.error('Erro ao adicionar filho(a)');
+      toast.error('Erro ao salvar dados');
     } finally {
       setLoading(false);
     }
@@ -59,9 +76,9 @@ export function AddChildDialog({ open, onOpenChange, onSubmit }: AddChildDialogP
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Adicionar Filho(a)</DialogTitle>
+          <DialogTitle>{initialData ? 'Editar Filho(a)' : 'Adicionar Filho(a)'}</DialogTitle>
           <DialogDescription>
-            Preencha os dados do seu filho(a) para começar a acompanhar a vida escolar.
+            {initialData ? 'Atualize os dados do seu filho(a).' : 'Preencha os dados do seu filho(a) para começar a acompanhar a vida escolar.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
@@ -109,7 +126,7 @@ export function AddChildDialog({ open, onOpenChange, onSubmit }: AddChildDialogP
               Cancelar
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? 'Salvando...' : 'Adicionar'}
+              {loading ? 'Salvando...' : initialData ? 'Salvar' : 'Adicionar'}
             </Button>
           </DialogFooter>
         </form>

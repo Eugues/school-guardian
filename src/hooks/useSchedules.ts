@@ -25,7 +25,7 @@ export function useSchedules(childId?: string) {
   });
 
   const addSchedule = useMutation({
-    mutationFn: async (schedule: Omit<Schedule, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (schedule: Omit<Schedule, 'id' | 'created_at' | 'updated_at' | 'created_by'>) => {
       const { data, error } = await supabase
         .from('schedules')
         .insert({
