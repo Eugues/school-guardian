@@ -4,13 +4,16 @@ import { ptBR } from 'date-fns/locale';
 import { useAuth } from '@/contexts/AuthContext';
 import { useChild } from '@/contexts/ChildContext';
 import { useChildren } from '@/hooks/useChildren';
+import { useAllChildLinks } from '@/hooks/useChildUserLink';
 import { DashboardLayout } from '@/components/DashboardLayout';
 import { ChildCard } from '@/components/ChildCard';
 import { AddChildDialog } from '@/components/AddChildDialog';
 import { ConfirmDeleteDialog } from '@/components/dialogs/ConfirmDeleteDialog';
+import { LinkChildAccountDialog } from '@/components/dialogs/LinkChildAccountDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import {
   Plus,
   Users,
@@ -19,18 +22,26 @@ import {
   GraduationCap,
   Calendar,
   School,
+  Link2,
+  CheckCircle2,
 } from 'lucide-react';
+import { Child } from '@/types/database';
 
 export default function ChildrenPage() {
   const { userRole } = useAuth();
   const { setSelectedChildId } = useChild();
   const { children, isLoading, addChild, updateChild, deleteChild } = useChildren();
+  const { data: links = [] } = useAllChildLinks(children.map(c => c.id));
   
   const [addOpen, setAddOpen] = useState(false);
-  const [editChild, setEditChild] = useState<typeof children[0] | null>(null);
+  const [editChild, setEditChild] = useState<Child | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [linkChild, setLinkChild] = useState<Child | null>(null);
 
   const isParent = userRole === 'parent';
+
+  // Check if a child is linked
+  const isChildLinked = (childId: string) => links.some(l => l.child_id === childId);
 
   const handleDelete = async () => {
     if (deleteId) {
@@ -108,6 +119,15 @@ export default function ChildrenPage() {
                     variant="secondary"
                     size="icon"
                     className="h-8 w-8"
+                    onClick={() => setLinkChild(child)}
+                    title="Vincular conta"
+                  >
+                    <Link2 className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="h-8 w-8"
                     onClick={() => setEditChild(child)}
                   >
                     <Edit2 className="w-4 h-4" />
@@ -127,8 +147,16 @@ export default function ChildrenPage() {
                     <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 text-primary text-lg font-bold">
                       {child.name.charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                      <CardTitle className="text-lg">{child.name}</CardTitle>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">{child.name}</CardTitle>
+                        {isChildLinked(child.id) && (
+                          <Badge variant="secondary" className="text-xs gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Vinculado
+                          </Badge>
+                        )}
+                      </div>
                       {child.grade && (
                         <p className="text-sm text-muted-foreground">{child.grade}</p>
                       )}
@@ -153,9 +181,21 @@ export default function ChildrenPage() {
                     </div>
                   )}
                   
+                  
+                  {!isChildLinked(child.id) && (
+                    <Button
+                      variant="outline"
+                      className="w-full mt-2"
+                      onClick={() => setLinkChild(child)}
+                    >
+                      <Link2 className="w-4 h-4 mr-2" />
+                      Vincular Conta
+                    </Button>
+                  )}
+                  
                   <Button
-                    variant="outline"
-                    className="w-full mt-4"
+                    variant="ghost"
+                    className="w-full mt-2"
                     onClick={() => setSelectedChildId(child.id)}
                   >
                     <GraduationCap className="w-4 h-4 mr-2" />
@@ -199,6 +239,15 @@ export default function ChildrenPage() {
         description="Tem certeza que deseja remover este filho? Todos os dados associados (tarefas, provas, agenda) serão perdidos permanentemente."
         loading={deleteChild.isPending}
       />
+
+      {/* Link Account Dialog */}
+      {linkChild && (
+        <LinkChildAccountDialog
+          open={!!linkChild}
+          onOpenChange={(open) => !open && setLinkChild(null)}
+          child={linkChild}
+        />
+      )}
     </DashboardLayout>
   );
 }
