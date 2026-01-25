@@ -1,8 +1,10 @@
-import { ReactNode } from 'react';
+import { ReactNode, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useChild } from '@/contexts/ChildContext';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { JoinFamilyDialog } from '@/components/dialogs/JoinFamilyDialog';
 import {
   Shield,
   Home,
@@ -22,8 +25,8 @@ import {
   LogOut,
   Menu,
   X,
+  Link2,
 } from 'lucide-react';
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface DashboardLayoutProps {
@@ -48,9 +51,14 @@ const childNavItems = [
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
   const { profile, userRole, signOut } = useAuth();
+  const { activeChildId } = useChild();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [joinFamilyOpen, setJoinFamilyOpen] = useState(false);
+
+  // Check if child user is linked
+  const isChildLinked = userRole === 'child' && !!activeChildId;
 
   const navItems = userRole === 'child' ? childNavItems : parentNavItems;
 
@@ -131,6 +139,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {userRole === 'child' && !isChildLinked && (
+                <DropdownMenuItem onClick={() => setJoinFamilyOpen(true)}>
+                  <Link2 className="mr-2 h-4 w-4" />
+                  Vincular à Família
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair
@@ -172,7 +186,32 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       )}
 
       {/* Main Content */}
-      <main className="container px-4 py-6">{children}</main>
+      <main className="container px-4 py-6">
+        {/* Show unlinked warning for child users */}
+        {userRole === 'child' && !isChildLinked && (
+          <div className="mb-6 p-4 bg-warning/10 border border-warning/30 rounded-lg flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Link2 className="w-5 h-5 text-warning" />
+              <div>
+                <p className="font-medium text-sm">Conta não vinculada</p>
+                <p className="text-xs text-muted-foreground">
+                  Vincule sua conta para ver suas tarefas e agenda
+                </p>
+              </div>
+            </div>
+            <Button size="sm" onClick={() => setJoinFamilyOpen(true)}>
+              Vincular
+            </Button>
+          </div>
+        )}
+        {children}
+      </main>
+
+      {/* Join Family Dialog for children */}
+      <JoinFamilyDialog
+        open={joinFamilyOpen}
+        onOpenChange={setJoinFamilyOpen}
+      />
     </div>
   );
 }
