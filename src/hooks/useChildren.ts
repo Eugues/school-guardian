@@ -56,6 +56,10 @@ export function useChildren() {
     mutationFn: async (child: Omit<Child, 'id' | 'created_at' | 'updated_at'>) => {
       if (!user) throw new Error('Not authenticated');
 
+      console.log('Adding child - User ID:', user.id);
+      console.log('Adding child - User Role:', userRole);
+      console.log('Adding child - Child data:', child);
+
       // Create child
       const { data: childData, error: childError } = await supabase
         .from('children')
@@ -63,7 +67,12 @@ export function useChildren() {
         .select()
         .single();
 
-      if (childError) throw childError;
+      if (childError) {
+        console.error('Error creating child:', childError);
+        throw childError;
+      }
+
+      console.log('Child created:', childData);
 
       // Create parent-child relationship
       const { error: relationError } = await supabase
@@ -73,8 +82,12 @@ export function useChildren() {
           child_id: childData.id,
         });
 
-      if (relationError) throw relationError;
+      if (relationError) {
+        console.error('Error creating parent-child relationship:', relationError);
+        throw relationError;
+      }
 
+      console.log('Parent-child relationship created');
       return childData as Child;
     },
     onSuccess: () => {
